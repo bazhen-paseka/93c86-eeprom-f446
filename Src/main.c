@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "spi.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -100,6 +101,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
 
 	Debug_struct DebugH;
@@ -126,6 +128,7 @@ int main(void)
 
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
 	HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
+	HAL_GPIO_TogglePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin);
 	HAL_Delay(1000);
 
     /* USER CODE END WHILE */
