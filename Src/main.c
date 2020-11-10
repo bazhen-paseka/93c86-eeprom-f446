@@ -26,10 +26,18 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+	#include <stdio.h>
+	#include <string.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+
+	typedef struct
+	{
+		UART_HandleTypeDef *uart;
+	}	Debug_struct;
 
 /* USER CODE END PTD */
 
@@ -46,6 +54,9 @@
 
 /* USER CODE BEGIN PV */
 
+	#define	DEBUG_STRING_SIZE		100
+	char DebugString[DEBUG_STRING_SIZE];
+	int	pointer = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -90,14 +101,23 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
+	Debug_struct DebugH;
+	DebugH.uart = &huart2;
+	sprintf(DebugString,"Hello word \r\n");
+	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
-	  HAL_Delay(1000);
+	  pointer++;
+	sprintf(DebugString,"%d)\r\n",pointer);
+	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
+	HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
+	HAL_Delay(1000);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
