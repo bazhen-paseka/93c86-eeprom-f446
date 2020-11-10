@@ -128,8 +128,28 @@ int main(void)
 
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
 	HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
-	HAL_GPIO_TogglePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin);
-	HAL_Delay(1000);
+
+	HAL_Delay(100);
+
+
+	#define BYTE_IN_SPI_PACKAGE		4
+	#define SPI_PACKAGE_TIMEOUT		1
+	uint8_t spi_data[BYTE_IN_SPI_PACKAGE];
+	spi_data[0] = (uint8_t)( pointer     );
+	spi_data[1] = (uint8_t)( pointer + 1 );
+	spi_data[2] = (uint8_t)( pointer + 2 );
+	spi_data[3] = (uint8_t)( pointer + 3 );
+
+	//HAL_GPIO_TogglePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin);
+	HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin,  SET) ;
+    HAL_SPI_Transmit(&hspi3, spi_data, BYTE_IN_SPI_PACKAGE, SPI_PACKAGE_TIMEOUT) ;
+    HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin, RESET ) ;
+
+
+
+
+
+
 
     /* USER CODE END WHILE */
 
