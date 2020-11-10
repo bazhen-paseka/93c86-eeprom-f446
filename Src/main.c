@@ -45,6 +45,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+	#define BYTE_IN_SPI_PACKAGE		8
+	#define SPI_PACKAGE_TIMEOUT		1000
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -59,6 +63,8 @@
 	#define	DEBUG_STRING_SIZE		100
 	char DebugString[DEBUG_STRING_SIZE];
 	int	pointer = 0;
+	uint8_t spi_data[BYTE_IN_SPI_PACKAGE] = { 0 };
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -109,6 +115,14 @@ int main(void)
 	sprintf(DebugString,"Hello word \r\n");
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
 
+	HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin,  SET) ;
+	HAL_Delay(1);
+	spi_data[0] = 192;
+	spi_data[1] =   0;
+    HAL_SPI_Transmit(&hspi3, spi_data, 2, SPI_PACKAGE_TIMEOUT) ;
+    HAL_Delay(1);
+    HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin, RESET ) ;
+
 	LCD_Init();
 	LCD_SetRotation(1);
 	LCD_SetCursor(0, 0);
@@ -116,39 +130,74 @@ int main(void)
 	LCD_SetTextColor(ILI92_MAGENTA, ILI92_WHITE);
 	LCD_Printf("%s",DebugString);
 
+
+	HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin,  SET) ;
+	HAL_Delay(1);
+		//	EWEN - Erase/Write Enable instruction.
+	spi_data[0] = 0b10011000;
+	spi_data[1] =   0;
+	HAL_SPI_Transmit(&hspi3, spi_data, 2 , SPI_PACKAGE_TIMEOUT) ;
+    HAL_Delay(1);
+
+    	//	 WRAL - Write All instruction.
+    spi_data[0] = 0b10001000;
+    spi_data[1] = 0b10101010;
+    spi_data[2] = 0b10101010;
+    spi_data[3] = 0;
+    HAL_SPI_Transmit(&hspi3, spi_data, 4, SPI_PACKAGE_TIMEOUT) ;
+    HAL_Delay(1);
+    HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin, RESET ) ;
+
+	HAL_Delay(100);
+
+	spi_data[0] = 192;
+	spi_data[1] = 0x00;
+	spi_data[2] = 0x00;
+	spi_data[3] = 0x00;
+	spi_data[4] = 0x00;
+	spi_data[5] = 0x00;
+	spi_data[6] = 0x00;
+	spi_data[7] = 0x00;
+
+	HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin,  SET) ;
+	HAL_Delay(1);
+    HAL_SPI_Transmit(&hspi3, spi_data, BYTE_IN_SPI_PACKAGE, SPI_PACKAGE_TIMEOUT) ;
+    HAL_Delay(1);
+    HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin, RESET ) ;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  pointer++;
+	pointer++;
 	sprintf(DebugString,"%d)\r\n",pointer);
 	LCD_Printf("%s",DebugString);
-
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
 	HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
-
 	HAL_Delay(100);
 
-
-	#define BYTE_IN_SPI_PACKAGE		4
-	#define SPI_PACKAGE_TIMEOUT		1
-	uint8_t spi_data[BYTE_IN_SPI_PACKAGE];
-	spi_data[0] = (uint8_t)( pointer     );
-	spi_data[1] = (uint8_t)( pointer + 1 );
-	spi_data[2] = (uint8_t)( pointer + 2 );
-	spi_data[3] = (uint8_t)( pointer + 3 );
-
-	//HAL_GPIO_TogglePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin);
 	HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin,  SET) ;
-    HAL_SPI_Transmit(&hspi3, spi_data, BYTE_IN_SPI_PACKAGE, SPI_PACKAGE_TIMEOUT) ;
+	HAL_Delay(1);
+	spi_data[0] = 192;
+	spi_data[1] = 0x00;
+
+    HAL_SPI_Transmit(&hspi3, spi_data, 2, SPI_PACKAGE_TIMEOUT) ;
+    HAL_Delay(1);
+
+    spi_data[0] = 0x00;
+	spi_data[1] = 0x00;
+	spi_data[2] = 0x00;
+	spi_data[3] = 0x00;
+	spi_data[4] = 0x00;
+	spi_data[5] = 0x00;
+	spi_data[6] = 0x00;
+	spi_data[7] = 0x00;
+    HAL_SPI_Receive(&hspi3, spi_data, BYTE_IN_SPI_PACKAGE, SPI_PACKAGE_TIMEOUT);
+
+    HAL_Delay(1);
     HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin, RESET ) ;
-
-
-
-
-
 
 
     /* USER CODE END WHILE */
