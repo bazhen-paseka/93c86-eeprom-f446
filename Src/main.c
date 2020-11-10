@@ -28,6 +28,7 @@
 
 	#include <stdio.h>
 	#include <string.h>
+	#include "lcd.h"
 
 /* USER CODE END Includes */
 
@@ -106,6 +107,13 @@ int main(void)
 	sprintf(DebugString,"Hello word \r\n");
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
 
+	LCD_Init();
+	LCD_SetRotation(1);
+	LCD_SetCursor(0, 0);
+	LCD_FillScreen(ILI92_WHITE);
+	LCD_SetTextColor(ILI92_MAGENTA, ILI92_WHITE);
+	LCD_Printf("%s",DebugString);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -114,6 +122,8 @@ int main(void)
   {
 	  pointer++;
 	sprintf(DebugString,"%d)\r\n",pointer);
+	LCD_Printf("%s",DebugString);
+
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
 	HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
 	HAL_Delay(1000);
