@@ -53,6 +53,10 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
+	//	#define SET_BIT(var, pos) ((var) |= (1UL << (pos)))
+	#define CLR_BIT(var, pos) (var &= ~(1UL << (pos)))
+	#define CHECK_BIT(var, pos) (((var) & (1UL << (pos))) != 0)
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -62,7 +66,6 @@
 	#define	DEBUG_STRING_SIZE		100
 	char DebugString[DEBUG_STRING_SIZE];
 	int	pointer = 0;
-	uint8_t spi_data[BYTE_IN_SPI_PACKAGE] = { 0 };
 
 /* USER CODE END PV */
 
@@ -116,13 +119,6 @@ int main(void)
 	sprintf(DebugString,"Hello word \r\n");
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
 
-	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin,  SET) ;
-	HAL_Delay(1);
-	spi_data[0] = 192;
-	spi_data[1] =   0;
-    HAL_Delay(1);
-    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, RESET ) ;
-
 	LCD_Init();
 	LCD_SetRotation(1);
 	LCD_SetCursor(0, 0);
@@ -131,39 +127,119 @@ int main(void)
 	LCD_Printf("%s",DebugString);
 
 
+	//** EWEN *******************************************************
+	{
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin,  SET) ;
-	HAL_Delay(1);
-		//	EWEN - Erase/Write Enable instruction.
-	spi_data[0] = 0b10011000;
-	spi_data[1] =   0;
+	delay(1000);
+	uint8_t read_u8 = 0b00011001 ;
+	for (int pos = 0; pos<13; pos++) {
+		if ( CHECK_BIT(read_u8, pos) == 0 ) {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, RESET ) ;
+		}
+		else {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, SET ) ;
+		}
 
-    HAL_Delay(1);
+		delay(500);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
+		delay(1000);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(500);
+	}
+	delay(500);
 
-    	//	 WRAL - Write All instruction.
-    spi_data[0] = 0b10001000;
-    spi_data[1] = 0b10101010;
-    spi_data[2] = 0b10101010;
-    spi_data[3] = 0;
+	for (int pos = 0; pos<35; pos++) {
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
+		delay(1000);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(1000);
+	}
 
-    HAL_Delay(1);
-    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, RESET ) ;
+	delay(1000);
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, RESET ) ;
+	}
+	//*** EWEN *******************************************************
 
-	HAL_Delay(100);
+	HAL_Delay(5);
 
-	spi_data[0] = 192;
-	spi_data[1] = 0x00;
-	spi_data[2] = 0x00;
-	spi_data[3] = 0x00;
-	spi_data[4] = 0x00;
-	spi_data[5] = 0x00;
-	spi_data[6] = 0x00;
-	spi_data[7] = 0x00;
-
+	//*** WRITE *******************************************************
+	{
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin,  SET) ;
-	HAL_Delay(1);
+	delay(1000);
+	uint16_t write_u16 = 0b0000000000000101 ;
+	for (int pos = 0; pos<13; pos++) {
+		if ( CHECK_BIT(write_u16, pos) == 0 ) {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, RESET ) ;
+		}
+		else {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, SET ) ;
+		}
 
-    HAL_Delay(1);
-    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, RESET ) ;
+		delay(500);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
+		delay(1000);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(500);
+	}
+	delay(500);
+
+	write_u16 = 0x5555 ;
+	for (int pos = 0; pos<16; pos++) {
+		if ( CHECK_BIT(write_u16, pos) == 0 ) {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, RESET ) ;
+		}
+		else {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, SET ) ;
+		}
+
+		delay(500);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
+		delay(1000);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(500);
+	}
+
+	HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, RESET ) ;
+
+	delay(1000);
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, RESET ) ;
+	}
+	//*** WRITE *******************************************************
+
+	HAL_Delay(50);
+
+	//** EWDS *******************************************************
+	{
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin,  SET) ;
+	delay(1000);
+	uint8_t read_u8 = 0b00000001 ;
+	for (int pos = 0; pos<13; pos++) {
+		if ( CHECK_BIT(read_u8, pos) == 0 ) {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, RESET ) ;
+		}
+		else {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, SET ) ;
+		}
+
+		delay(500);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
+		delay(1000);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(500);
+	}
+	delay(500);
+
+	for (int pos = 0; pos<35; pos++) {
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
+		delay(1000);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(1000);
+	}
+
+	delay(1000);
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, RESET ) ;
+	}
+	//*** EWDS *******************************************************
 
   /* USER CODE END 2 */
 
@@ -176,37 +252,40 @@ int main(void)
 	LCD_Printf("%s",DebugString);
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
 	HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
-	HAL_Delay(100);
+	HAL_Delay(400);
 
+	//** READ *******************************************************
+	{
 	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin,  SET) ;
-
-	spi_data[0] = 192;
-	spi_data[1] = 0x00;
-
-
 	delay(1000);
+	uint8_t read_u8 = 0b00000011 ;
+	for (int pos = 0; pos<13; pos++) {
+		if ( CHECK_BIT(read_u8, pos) == 0 ) {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, RESET ) ;
+		}
+		else {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, SET ) ;
+		}
 
-    spi_data[0] = 0x00;
-	spi_data[1] = 0x00;
-	spi_data[2] = 0x00;
-	spi_data[3] = 0x00;
-	spi_data[4] = 0x00;
-	spi_data[5] = 0x00;
-	spi_data[6] = 0x00;
-	spi_data[7] = 0x00;
-
-	for (int i=0; i<20; i++) {
+		delay(500);
 		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
 		delay(1000);
-		HAL_GPIO_TogglePin(DI_GPIO_Port, DI_Pin) ;
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(500);
+	}
+	delay(500);
+
+	for (int pos = 0; pos<20; pos++) {
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
 		delay(1000);
 		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
 		delay(1000);
 	}
 
-
 	delay(1000);
     HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, RESET ) ;
+	}
+	//*** READ *******************************************************
 
 
     /* USER CODE END WHILE */
