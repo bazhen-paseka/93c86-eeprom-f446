@@ -1,3 +1,6 @@
 [submodule "Drivers/display_ILI-93xx_sm"]
 	path = Drivers/display_ILI-93xx_sm
 	url = https://github.com/bazhen-paseka/display_ILI-93xx_sm.git
+[submodule "Drivers/93c86-eeprom-sm"]
+	path = Drivers/93c86-eeprom-sm
+	url = https://github.com/bazhen-paseka/93c86-eeprom-sm.git
