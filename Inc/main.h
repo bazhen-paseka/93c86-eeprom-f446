@@ -70,10 +70,14 @@ void Error_Handler(void);
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
-#define SPI3_CS_Pin GPIO_PIN_2
-#define SPI3_CS_GPIO_Port GPIOD
-#define SWO_Pin GPIO_PIN_3
-#define SWO_GPIO_Port GPIOB
+#define CLK_Pin GPIO_PIN_10
+#define CLK_GPIO_Port GPIOC
+#define DO_Pin GPIO_PIN_11
+#define DO_GPIO_Port GPIOC
+#define DI_Pin GPIO_PIN_12
+#define DI_GPIO_Port GPIOC
+#define CS_Pin GPIO_PIN_2
+#define CS_GPIO_Port GPIOD
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */

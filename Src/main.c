@@ -20,7 +20,6 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "spi.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -71,6 +70,9 @@
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
+	inline void delay(uint32_t t);
+
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -107,7 +109,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
-  MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
 
 	Debug_struct DebugH;
@@ -115,13 +116,12 @@ int main(void)
 	sprintf(DebugString,"Hello word \r\n");
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
 
-	HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin,  SET) ;
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin,  SET) ;
 	HAL_Delay(1);
 	spi_data[0] = 192;
 	spi_data[1] =   0;
-    HAL_SPI_Transmit(&hspi3, spi_data, 2, SPI_PACKAGE_TIMEOUT) ;
     HAL_Delay(1);
-    HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin, RESET ) ;
+    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, RESET ) ;
 
 	LCD_Init();
 	LCD_SetRotation(1);
@@ -131,12 +131,12 @@ int main(void)
 	LCD_Printf("%s",DebugString);
 
 
-	HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin,  SET) ;
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin,  SET) ;
 	HAL_Delay(1);
 		//	EWEN - Erase/Write Enable instruction.
 	spi_data[0] = 0b10011000;
 	spi_data[1] =   0;
-	HAL_SPI_Transmit(&hspi3, spi_data, 2 , SPI_PACKAGE_TIMEOUT) ;
+
     HAL_Delay(1);
 
     	//	 WRAL - Write All instruction.
@@ -144,9 +144,9 @@ int main(void)
     spi_data[1] = 0b10101010;
     spi_data[2] = 0b10101010;
     spi_data[3] = 0;
-    HAL_SPI_Transmit(&hspi3, spi_data, 4, SPI_PACKAGE_TIMEOUT) ;
+
     HAL_Delay(1);
-    HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin, RESET ) ;
+    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, RESET ) ;
 
 	HAL_Delay(100);
 
@@ -159,11 +159,11 @@ int main(void)
 	spi_data[6] = 0x00;
 	spi_data[7] = 0x00;
 
-	HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin,  SET) ;
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin,  SET) ;
 	HAL_Delay(1);
-    HAL_SPI_Transmit(&hspi3, spi_data, BYTE_IN_SPI_PACKAGE, SPI_PACKAGE_TIMEOUT) ;
+
     HAL_Delay(1);
-    HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin, RESET ) ;
+    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, RESET ) ;
 
   /* USER CODE END 2 */
 
@@ -178,13 +178,13 @@ int main(void)
 	HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
 	HAL_Delay(100);
 
-	HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin,  SET) ;
-	HAL_Delay(1);
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin,  SET) ;
+
 	spi_data[0] = 192;
 	spi_data[1] = 0x00;
 
-    HAL_SPI_Transmit(&hspi3, spi_data, 2, SPI_PACKAGE_TIMEOUT) ;
-    HAL_Delay(1);
+
+	delay(1000);
 
     spi_data[0] = 0x00;
 	spi_data[1] = 0x00;
@@ -194,10 +194,19 @@ int main(void)
 	spi_data[5] = 0x00;
 	spi_data[6] = 0x00;
 	spi_data[7] = 0x00;
-    HAL_SPI_Receive(&hspi3, spi_data, BYTE_IN_SPI_PACKAGE, SPI_PACKAGE_TIMEOUT);
 
-    HAL_Delay(1);
-    HAL_GPIO_WritePin(SPI3_CS_GPIO_Port, SPI3_CS_Pin, RESET ) ;
+	for (int i=0; i<20; i++) {
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
+		delay(1000);
+		HAL_GPIO_TogglePin(DI_GPIO_Port, DI_Pin) ;
+		delay(1000);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(1000);
+	}
+
+
+	delay(1000);
+    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, RESET ) ;
 
 
     /* USER CODE END WHILE */
@@ -257,6 +266,10 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+inline void delay(uint32_t t) {
+	for (; t; t--) __asm("nop");
+}
 
 /* USER CODE END 4 */
 
