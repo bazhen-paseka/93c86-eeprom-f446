@@ -28,6 +28,7 @@
 
 	#include <stdio.h>
 	#include <string.h>
+	#include "lcd.h"
 
 /* USER CODE END Includes */
 
@@ -43,10 +44,18 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+	#define BYTE_IN_SPI_PACKAGE		8
+	#define SPI_PACKAGE_TIMEOUT		1000
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+
+	//	#define SET_BIT(var, pos) ((var) |= (1UL << (pos)))
+	#define CLR_BIT(var, pos) (var &= ~(1UL << (pos)))
+	#define CHECK_BIT(var, pos) (((var) & (1UL << (pos))) != 0)
 
 /* USER CODE END PM */
 
@@ -57,11 +66,15 @@
 	#define	DEBUG_STRING_SIZE		100
 	char DebugString[DEBUG_STRING_SIZE];
 	int	pointer = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+
+	inline void delay(uint32_t t);
+
 
 /* USER CODE END PFP */
 
@@ -106,17 +119,174 @@ int main(void)
 	sprintf(DebugString,"Hello word \r\n");
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
 
+	LCD_Init();
+	LCD_SetRotation(1);
+	LCD_SetCursor(0, 0);
+	LCD_FillScreen(ILI92_WHITE);
+	LCD_SetTextColor(ILI92_MAGENTA, ILI92_WHITE);
+	LCD_Printf("%s",DebugString);
+
+
+	//** EWEN *******************************************************
+	{
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin,  SET) ;
+	delay(1000);
+	uint8_t read_u8 = 0b00011001 ;
+	for (int pos = 0; pos<13; pos++) {
+		if ( CHECK_BIT(read_u8, pos) == 0 ) {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, RESET ) ;
+		}
+		else {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, SET ) ;
+		}
+
+		delay(500);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
+		delay(1000);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(500);
+	}
+	delay(500);
+
+	for (int pos = 0; pos<35; pos++) {
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
+		delay(1000);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(1000);
+	}
+
+	delay(1000);
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, RESET ) ;
+	}
+	//*** EWEN *******************************************************
+
+	HAL_Delay(5);
+
+	//*** WRITE *******************************************************
+	{
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin,  SET) ;
+	delay(1000);
+	uint16_t write_u16 = 0b0000000000000101 ;
+	for (int pos = 0; pos<13; pos++) {
+		if ( CHECK_BIT(write_u16, pos) == 0 ) {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, RESET ) ;
+		}
+		else {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, SET ) ;
+		}
+
+		delay(500);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
+		delay(1000);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(500);
+	}
+	delay(500);
+
+	write_u16 = 0x5555 ;
+	for (int pos = 0; pos<16; pos++) {
+		if ( CHECK_BIT(write_u16, pos) == 0 ) {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, RESET ) ;
+		}
+		else {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, SET ) ;
+		}
+
+		delay(500);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
+		delay(1000);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(500);
+	}
+
+	HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, RESET ) ;
+
+	delay(1000);
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, RESET ) ;
+	}
+	//*** WRITE *******************************************************
+
+	HAL_Delay(50);
+
+	//** EWDS *******************************************************
+	{
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin,  SET) ;
+	delay(1000);
+	uint8_t read_u8 = 0b00000001 ;
+	for (int pos = 0; pos<13; pos++) {
+		if ( CHECK_BIT(read_u8, pos) == 0 ) {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, RESET ) ;
+		}
+		else {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, SET ) ;
+		}
+
+		delay(500);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
+		delay(1000);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(500);
+	}
+	delay(500);
+
+	for (int pos = 0; pos<35; pos++) {
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
+		delay(1000);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(1000);
+	}
+
+	delay(1000);
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, RESET ) ;
+	}
+	//*** EWDS *******************************************************
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  pointer++;
+	pointer++;
 	sprintf(DebugString,"%d)\r\n",pointer);
+	LCD_Printf("%s",DebugString);
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
 	HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
-	HAL_Delay(1000);
+	HAL_Delay(400);
+
+	//** READ *******************************************************
+	{
+	HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin,  SET) ;
+	delay(1000);
+	uint8_t read_u8 = 0b00000011 ;
+	for (int pos = 0; pos<13; pos++) {
+		if ( CHECK_BIT(read_u8, pos) == 0 ) {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, RESET ) ;
+		}
+		else {
+			HAL_GPIO_WritePin(DI_GPIO_Port, DI_Pin, SET ) ;
+		}
+
+		delay(500);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
+		delay(1000);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(500);
+	}
+	delay(500);
+
+	for (int pos = 0; pos<20; pos++) {
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin,   SET ) ;
+		delay(1000);
+		HAL_GPIO_WritePin(CLK_GPIO_Port, CLK_Pin, RESET ) ;
+		delay(1000);
+	}
+
+	delay(1000);
+    HAL_GPIO_WritePin(CS_GPIO_Port, CS_Pin, RESET ) ;
+	}
+	//*** READ *******************************************************
+
 
     /* USER CODE END WHILE */
 
@@ -175,6 +345,10 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+inline void delay(uint32_t t) {
+	for (; t; t--) __asm("nop");
+}
 
 /* USER CODE END 4 */
 
