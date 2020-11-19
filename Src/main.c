@@ -62,7 +62,6 @@
 
 	#define	DEBUG_STRING_SIZE		100
 	char DebugString[DEBUG_STRING_SIZE];
-	int	pointer = 0;
 
 /* USER CODE END PV */
 
@@ -109,7 +108,7 @@ int main(void)
 
 	Debug_struct DebugH;
 	DebugH.uart = &huart2;
-	sprintf(DebugString,"Hello word \r\n");
+	sprintf(DebugString,"\r\nHello 93c86 err-- \r\n");
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
 
 	LCD_Init();
@@ -119,25 +118,43 @@ int main(void)
 	LCD_SetTextColor(ILI92_MAGENTA, ILI92_WHITE);
 	LCD_Printf("%s",DebugString);
 
-	EVEN  () ;		HAL_Delay(1);
-	WRITE () ;		HAL_Delay(1);
-	EWDS  () ;		HAL_Delay(1);
+//	EVEN  () ;						HAL_Delay(1);
+//	WRITE_ONE_CELL (11, 0x1111) ;	HAL_Delay(1);
+//	EWDS  () ;						HAL_Delay(1);
+	//HAL_Delay(1000);
 
+	sprintf(DebugString,"\r\n0000) ") ;
+	LCD_Printf("%s",DebugString);
+	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100) ;
+
+	  for (int cell = 0; cell < 1024; cell++) {
+		uint16_t res = READ (cell) ;
+
+		sprintf(DebugString,"%05d ", res) ;
+		LCD_Printf("%s",DebugString);
+		HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100) ;
+
+		if (((cell+1)%16 == 0) && (cell != 0))  {
+			sprintf(DebugString,"\r\n%04d) ", cell) ;
+			LCD_Printf("%s",DebugString);
+			HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100) ;
+		}
+
+		//LCD_Printf("%s",DebugString);
+		//HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100) ;
+		//HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
+		HAL_Delay(1);
+	  }
+
+		sprintf(DebugString,"\r\n The END.\r\n ") ;
+		LCD_Printf("%s",DebugString);
+		HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100) ;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	pointer++;
-	sprintf(DebugString,"%d)\r\n",pointer);
-	LCD_Printf("%s",DebugString);
-	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
-	HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
-	HAL_Delay(400);
-
-	READ () ;
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
