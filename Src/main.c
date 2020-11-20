@@ -108,7 +108,7 @@ int main(void)
 
 	Debug_struct DebugH;
 	DebugH.uart = &huart2;
-	sprintf(DebugString,"\r\nHello 93c86 err-- 20.11.2020v1-delay \r\n");
+	sprintf(DebugString,"\r\nHello 93c86 20.11.2020v1-reorder \r\n");
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
 
 	LCD_Init();
@@ -130,10 +130,11 @@ int main(void)
 	  for (int cell = 0; cell < 1024; cell++) {
 		uint16_t res = READ (cell) ;
 
-		char first_ch  = (char) ((res & 0xFF00)>>8) ;
-		char second_ch = (char)  (res & 0x00FF)     ;
-		sprintf(DebugString,"%c %c ", second_ch, first_ch ) ;
-		//sprintf(DebugString,"%05d ", res) ;
+//		char first_ch  = (char) ((res & 0xFF00)>>8) ;
+//		char second_ch = (char)  (res & 0x00FF)     ;
+//		sprintf(DebugString,"%c %c ", second_ch, first_ch ) ;
+
+		sprintf(DebugString,"%05d ", res) ;
 		LCD_Printf("%s",DebugString);
 		HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100) ;
 
@@ -149,7 +150,7 @@ int main(void)
 		//HAL_Delay(1);
 	  }
 
-		sprintf(DebugString,"\r\n The END.\r\n ") ;
+		sprintf(DebugString," The END.") ;
 		LCD_Printf("%s",DebugString);
 		HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100) ;
   /* USER CODE END 2 */
