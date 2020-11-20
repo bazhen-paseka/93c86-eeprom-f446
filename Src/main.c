@@ -108,7 +108,7 @@ int main(void)
 
 	Debug_struct DebugH;
 	DebugH.uart = &huart2;
-	sprintf(DebugString,"\r\nHello 93c86 err-- \r\n");
+	sprintf(DebugString,"\r\nHello 93c86 err-- 20.11.2020v1-delay \r\n");
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
 
 	LCD_Init();
@@ -143,7 +143,7 @@ int main(void)
 		//LCD_Printf("%s",DebugString);
 		//HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100) ;
 		//HAL_GPIO_TogglePin(LD2_GPIO_Port,LD2_Pin);
-		HAL_Delay(1);
+		//HAL_Delay(1);
 	  }
 
 		sprintf(DebugString,"\r\n The END.\r\n ") ;
