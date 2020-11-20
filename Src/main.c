@@ -132,7 +132,7 @@ int main(void)
 
 		char first_ch  = (char) ((res & 0xFF00)>>8) ;
 		char second_ch = (char)  (res & 0x00FF)     ;
-		sprintf(DebugString,"%c %c ", first_ch , second_ch ) ;
+		sprintf(DebugString,"%c %c ", second_ch, first_ch ) ;
 		//sprintf(DebugString,"%05d ", res) ;
 		LCD_Printf("%s",DebugString);
 		HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100) ;
