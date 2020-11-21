@@ -108,7 +108,7 @@ int main(void)
 
 	Debug_struct DebugH;
 	DebugH.uart = &huart2;
-	sprintf(DebugString,"\r\nHello 93c86 20.11.2020v1-reorder \r\n");
+	sprintf(DebugString,"\r\nHello 93c86 2020.11.21v4 dec2 \r\n");
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100);
 
 	LCD_Init();
@@ -127,19 +127,25 @@ int main(void)
 	LCD_Printf("%s",DebugString);
 	HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100) ;
 
-	  for (int cell = 0; cell < 1024; cell++) {
-		uint16_t res = READ (cell) ;
+	  for (int cell_int = 0; cell_int < 1024; cell_int++) {
+		uint16_t res_u16 = READ (cell_int) ;
 
-//		char first_ch  = (char) ((res & 0xFF00)>>8) ;
-//		char second_ch = (char)  (res & 0x00FF)     ;
-//		sprintf(DebugString,"%c %c ", second_ch, first_ch ) ;
+		{	//	for read char serial number
+		res_u16 = inverse_order_in_two_byte_V2 (res_u16);
+		char first_ch  = (char) ((res_u16 & 0xFF00)>>8) ;
+		char second_ch = (char)  (res_u16 & 0x00FF)     ;
+		sprintf(DebugString,"%c %c ", first_ch, second_ch ) ;
+		}
 
-		sprintf(DebugString,"%05d ", res) ;
+//		{	//	for read SOH and Hx
+//		sprintf(DebugString,"%05d ", res_u16) ;
+//		}
+
 		LCD_Printf("%s",DebugString);
 		HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100) ;
 
-		if (((cell+1)%16 == 0) && (cell != 0))  {
-			sprintf(DebugString,"\r\n%04d) ", cell) ;
+		if (((cell_int+1)%16 == 0) && (cell_int != 0))  {
+			sprintf(DebugString,"\r\n%04d) ", cell_int) ;
 			LCD_Printf("%s",DebugString);
 			HAL_UART_Transmit(DebugH.uart, (uint8_t *)DebugString, strlen(DebugString), 100) ;
 		}
